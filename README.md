@@ -45,6 +45,5 @@ are probably too monolithic in their current
 state for my liking, and additional decoupling 
 could also be achieved via use of an event manager.)
 
-With all of this being said, hopefully, 
-however, you'll find the supplied source code 
-clean & easy-to-follow. :)
+With this being said, hopefully, you'll find 
+the supplied source code helpful & easy-to-follow. :)
