@@ -41,9 +41,13 @@ important of these controllers is the
 "PlayerController" which controls player 
 movement & interaction.  (From an architecture 
 standpoint, both of these mentioned classes 
-are probably too monolithic in their current 
+are too monolithic in their current 
 state for my liking, and additional decoupling 
-could also be achieved via use of an event manager.)
+could also be achieved via heavier use of class 
+abstraction / interfaces, dependency-injection,
+& use of an event manager.)
 
 With this being said, hopefully, you'll find 
-the supplied source code helpful & easy-to-follow. :)
+the supplied source code helpful & easy-to-follow. 
+
+Enjoy!:)
