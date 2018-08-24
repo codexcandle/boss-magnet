@@ -8,8 +8,7 @@ namespace Codebycandle.BossMagnet
 	public class LevelLogic:MonoBehaviour
 	{
         #region VARS (camera)
-        [SerializeField]
-		private CameraController cameraController;
+        [SerializeField] private CameraController cameraController;
         #endregion
 
         #region VARS (player)
@@ -18,41 +17,32 @@ namespace Codebycandle.BossMagnet
         #endregion
 
         #region VARS (boss)
-        [SerializeField]
-		private PromptController promptController;			
-		[SerializeField]
-		private Transform bossCameraPosition;
+        [SerializeField] private PromptController promptController;			
+		[SerializeField] private Transform bossCameraPosition;
 		private bool bossBusy;
         #endregion
 
         #region VARS (enemy)
-        [SerializeField]
-		private GameObject enemyRoot;
+        [SerializeField] private GameObject enemyRoot;
         #endregion
 
         #region VARS (mini-map)		
-        [SerializeField]
-		private MinimapViewController minimapViewController;
+        [SerializeField] private MinimapViewController minimapViewController;
         #endregion
 
         #region VARS (audio)
-        [SerializeField]
-		private MusicPlayerController musicPlayerController;
+        [SerializeField] private MusicPlayerController musicPlayerController;
         private AudioSource audioSource;
         public AudioClip wonClip;
         public AudioClip lostClip;
         #endregion
 
         #region VARS (debris)
-        [SerializeField]
-		private int debrisCount = 5;
-		[SerializeField]
-		private int targetDebrisReductionFactor = 10;
+        [SerializeField] private int debrisCount = 5;
+		[SerializeField] private int targetDebrisReductionFactor = 10;
 		private int targetDebrisCount;		
-		[SerializeField]
-		private float debrisHeight = 6F;
-		[SerializeField]
-		private int posScale;						
+		[SerializeField] private float debrisHeight = 6F;
+		[SerializeField] private int posScale;						
 		private Debris.Kind _targetDebrisKind;
 		public Debris.Kind targetDebrisKind
 		{
@@ -167,12 +157,12 @@ namespace Codebycandle.BossMagnet
             // *******************************************
             enemyRoot.SetActive(true);
 
-            playerController.EnableMovement(true);
+            playerController.active = true;
         }
 
         IEnumerator HandleWin()
         {
-            playerController.EnableMovement(false);
+            playerController.active = false;
 
             scoreboardController.ShowView(false);
 
@@ -197,19 +187,7 @@ namespace Codebycandle.BossMagnet
 
         IEnumerator EndGameFromEnemy()
         {
-            playerController.EnableMovement(false);
-
-            playerController.ShowHealthMeter(false);
-
-            scoreboardController.ShowView(false);
-
-            minimapViewController.ShowView(false);
-
-            musicPlayerController.PlayMusic(false);
-
-            SetPromptText(GameText.GAME_LOST_ENEMY);
-
-            PlaySound(lostClip);
+            HandleLoss(GameText.GAME_LOST_ENEMY);
 
             yield return new WaitForSeconds(4);
 
@@ -218,7 +196,16 @@ namespace Codebycandle.BossMagnet
 
         IEnumerator EndGameFromBoundsExceeded()
         {
-            playerController.EnableMovement(false);
+            HandleLoss(GameText.GAME_LOST_BOUNDS);
+
+            yield return new WaitForSeconds(4);
+
+            EndGame();
+        }
+
+        private void HandleLoss(string promptText)
+        {
+            playerController.active = false;
 
             playerController.ShowHealthMeter(false);
 
@@ -228,13 +215,9 @@ namespace Codebycandle.BossMagnet
 
             musicPlayerController.PlayMusic(false);
 
-            SetPromptText(GameText.GAME_LOST_BOUNDS);
+            SetPromptText(promptText);
 
             PlaySound(lostClip);
-
-            yield return new WaitForSeconds(4);
-
-            EndGame();
         }
 
         private void EndGame()

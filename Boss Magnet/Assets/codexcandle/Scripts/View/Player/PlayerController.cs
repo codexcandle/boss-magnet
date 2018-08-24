@@ -31,7 +31,14 @@ namespace Codebycandle.BossMagnet
 
         #region VARS (movement)
         [SerializeField] private float speed;
-        private bool interactive;
+        private bool _active;
+        public bool active
+        {
+            set
+            {
+                _active = value;
+            }
+        }
         #endregion
 
         #region VARS (collision)
@@ -40,28 +47,15 @@ namespace Codebycandle.BossMagnet
         [SerializeField] private ParticleSystem damagePS;
         [SerializeField] private ParticleSystem powerupPS;
         private bool busyDelaying;
-        private bool _megaMagnetActive;
-        public bool megaMagnetActive
-        {
-            get
-            {
-                return _megaMagnetActive;
-            }
-        }
+        private bool megaMagnetActive;
         #endregion
 
         #region METHODS (public)
-        // *************************** movement
-        public void EnableMovement(bool value)
-        {
-            interactive = value;
-        }
-
         // *************************** health
         public void TakeDamage(int amount)
         {
-            if (interactive == false)
-                return;
+            // sanitize
+            if (!_active) return;
 
             damaged = true;
 
@@ -75,7 +69,7 @@ namespace Codebycandle.BossMagnet
 
             if (curHP == 0)
             {
-                interactive = false;
+                _active = false;
             }
 
             levelLogic.HandlePlayerHPChange(curHP);
@@ -124,21 +118,24 @@ namespace Codebycandle.BossMagnet
 
             powerupPS.Play();
 
-            _megaMagnetActive = true;
+            megaMagnetActive = true;
         }
 
         // *************************** collison
-        public void AttachThing(Transform trans)
+        public void RequestAttachThing(string CollisionOriginatorTag, Transform trans)
         {
-            trans.parent = debrisTrunk.transform;
+            // santize
+            if (busyDelaying) return;
 
-            trans.gameObject.tag = GameTag.TAG_PLAYER_KID;
-
-            SetLayerForMinimapKids(trans, false);
-
-            Destroy(trans.GetComponent<Rigidbody>());
-
-            PlayAttachSound();
+            switch (CollisionOriginatorTag)
+            {
+                case GameTag.TAG_PLAYER:
+                    AttachThing(trans);
+                    break;
+                case GameTag.TAG_PLAYER_KID:
+                    if(megaMagnetActive) AttachThing(trans);
+                    break;
+            }
         }
 
         public void ExpelKids()
@@ -179,11 +176,10 @@ namespace Codebycandle.BossMagnet
             }
 
             playerModelRB.useGravity = true;
-
             playerModelRB.isKinematic = false;
             playerModelRB.detectCollisions = true;
 
-            if (busyDelaying == false)
+            if (!busyDelaying)
             {
                 StartCoroutine(DelayActivateMagnet());
             }
@@ -232,7 +228,7 @@ namespace Codebycandle.BossMagnet
 
         void FixedUpdate()
         {
-            if (interactive)
+            if (_active)
             {
                 float moveHorizontal = Input.GetAxis("Horizontal");
                 float moveVertical = Input.GetAxis("Vertical");
@@ -243,20 +239,20 @@ namespace Codebycandle.BossMagnet
             }
         }
 
-        void OnCollisionEnter(Collision info)
+        void OnTriggerEnter(Collider info)
         {
             // santize
-            if (interactive == false) return;
+            if (!_active) return;
 
+            /*
+             NOTE - ONLY handling "non-debris" collisions, since 
+             those are handled by "sticky" class,
+             which allows for dileneation
+             for main player object hitting, or
+             CHILD player object hitting.
+             */
             switch (info.gameObject.tag)
             {
-                case GameTag.TAG_DEBRIS:
-                    if (!_megaMagnetActive) return;
-                    break;
-                case GameTag.TAG_PLAYER_KID:
-                    if (!_megaMagnetActive) return;
-
-                    break;
                 case GameTag.TAG_BOSS:
                     levelLogic.HandleBossInteraction();
 
@@ -268,72 +264,47 @@ namespace Codebycandle.BossMagnet
                 default:
                     return;
             }
+        }
 
-            if (busyDelaying)
+        /*
+         * TODO - might switch to handle ALL collisions with player class (vs. sticky.cs)
+        void OnTriggerEnterDEBUG(Collider other)
+        {
+            // if collided with ROOT player object, attach to player
+            if (other.gameObject.CompareTag(GameTag.TAG_DEBRIS))
             {
+                AttachThing(other.gameObject.transform);
+
                 return;
             }
 
-            bool hitMainCollider = false;
-
-            // only attach if hit main sphere
-            foreach (ContactPoint contact in info.contacts)
+            // if collided with CHILD player object, AND "megaMagnetMode = enabled", attach to player!
+            else if (other.gameObject.CompareTag(GameTag.TAG_PLAYER_KID))
             {
-                Collider col = GetComponent<Collider>();
-                if (contact.thisCollider == col)
+                if (_megaMagnetActive)
                 {
-                    hitMainCollider = true;
-
-                    break;
+                    AttachThing(other.gameObject.transform);
                 }
-            }
 
-            if (hitMainCollider)
-            {
-                AttachFromCollision(info);
+                return;
             }
         }
+        */
         #endregion
 
         #region METHODS (private)
-        // *************************** sound
-        // TODO - move to SoundManager!        
-        private void PlaySound(AudioClip clip)
-        {
-            audioSource.clip = clip;
-            
-            audioSource.Play ();
-        }
-
         // *************************** collision
-        private void AttachFromCollision(Collision col)
+        private void AttachThing(Transform trans)
         {
-            if (!_megaMagnetActive)
-                return;
+            trans.parent = debrisTrunk.transform;
 
-            Destroy(col.rigidbody);
+            trans.gameObject.tag = GameTag.TAG_PLAYER_KID;
 
-            col.transform.parent = debrisTrunk;
+            SetLayerForMinimapKids(trans, false);
 
-            col.transform.tag = GameTag.TAG_PLAYER_KID;
-
-            SetLayerForMinimapKids(col.transform, false);
+            Destroy(trans.GetComponent<Rigidbody>());
 
             PlayAttachSound();
-        }
-
-        private void SetLayerForMinimapKids(Transform t, bool show)
-        {
-            foreach(Transform trans in t)
-            {
-                if(trans.gameObject.CompareTag(GameTag.TAG_MINIMAP))
-                {
-                    // TODO - replace literals!
-                    // layer 8 = Minimap
-                    // layer 11 = Minimap_hidden
-                    trans.gameObject.layer = show ? 8 : 11; 
-                }
-            }
         }
 
         private IEnumerator DelayActivateMagnet()
@@ -343,6 +314,27 @@ namespace Codebycandle.BossMagnet
             yield return new WaitForSeconds(1.0F);
 
             busyDelaying = false;
+        }
+
+        // *************************** sound
+        // TODO - move to SoundManager!        
+        private void PlaySound(AudioClip clip)
+        {
+            audioSource.clip = clip;
+            
+            audioSource.Play ();
+        }
+
+        // *************************** mini-map
+        private void SetLayerForMinimapKids(Transform t, bool show)
+        {
+            foreach(Transform trans in t)
+            {
+                if(trans.gameObject.CompareTag(GameTag.TAG_MINIMAP))
+                {
+                    trans.gameObject.layer = show ? GameLayer.LAYER_MINIMAP : GameLayer.LAYER_MINIMAP_HIDDEN; 
+                }
+            }
         }
         #endregion
     }
