@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace Codebycandle.NCSoftDemo
+﻿namespace Codebycandle.BossMagnet
 {
 	public static class GameTag
 	{

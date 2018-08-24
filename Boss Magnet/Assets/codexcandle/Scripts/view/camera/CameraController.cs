@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-namespace Codebycandle.NCSoftDemo
+namespace Codebycandle.BossMagnet
 {
     public class CameraController:MonoBehaviour
     {

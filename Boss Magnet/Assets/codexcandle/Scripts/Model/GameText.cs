@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Codebycandle.NCSoftDemo
+namespace Codebycandle.BossMagnet
 {
 	public class GameText:MonoBehaviour
 	{
@@ -14,7 +13,6 @@ namespace Codebycandle.NCSoftDemo
 		public const string FOUND_POWERUP 		= "MAGNET POWER UPGRADED!";		
 		public const string FOUND_NONE 			= "No matches. Keep looking!";
 		public const string FOUND_ALL			= "You found them all!";
-
 
 		public static GameText Instance
 		{

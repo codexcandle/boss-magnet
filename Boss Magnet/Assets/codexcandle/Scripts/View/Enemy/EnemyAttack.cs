@@ -1,58 +1,59 @@
 ﻿using UnityEngine;
-using System.Collections;
-using Codebycandle.NCSoftDemo;
 
-public class EnemyAttack:MonoBehaviour
+namespace Codebycandle.BossMagnet
 {
-    public float timeBetweenAttacks             = 0.5f;
-    public int attackDamage                     = 10;
-
-    // TODO - elim ref with action delegate!
-    private PlayerController playerController;
-    private GameObject player;
-
-    Animator anim;
-    bool playerInRange;
-    float attackTimer;
-
-    void Awake()
+    public class EnemyAttack:MonoBehaviour
     {
-        player = GameObject.FindGameObjectWithTag(GameTag.TAG_PLAYER);
-        playerController = player.GetComponent<PlayerController>();
-        
-        anim = GetComponent<Animator>();
-    }
+        public float timeBetweenAttacks     = 0.5f;
+        public int attackDamage             = 10;
 
-    void Update()
-    {
-        attackTimer += Time.deltaTime;
+        // TODO - elim ref with action delegate!
+        private PlayerController playerController;
+        private GameObject player;
 
-        if(attackTimer >= timeBetweenAttacks && playerInRange)
+        private Animator anim;
+        private bool playerInRange;
+        private float attackTimer;
+
+        void Awake()
         {
-            Attack();
-        }
-    }
+            player = GameObject.FindGameObjectWithTag(GameTag.TAG_PLAYER);
+            playerController = player.GetComponent<PlayerController>();
 
-    void OnTriggerEnter(Collider other)
-    {
-        if(other.gameObject == player)
+            anim = GetComponent<Animator>();
+        }
+
+        void Update()
         {
-            playerInRange = true;
+            attackTimer += Time.deltaTime;
+
+            if(attackTimer >= timeBetweenAttacks && playerInRange)
+            {
+                Attack();
+            }
         }
-    }
 
-    void OnTriggerExit(Collider other)
-    {
-        if(other.gameObject == player)
-        {			
-            playerInRange = false;
+        void OnTriggerEnter(Collider other)
+        {
+            if(other.gameObject == player)
+            {
+                playerInRange = true;
+            }
         }
-    }
 
-    private void Attack()
-    {
-        attackTimer = 0f;
+        void OnTriggerExit(Collider other)
+        {
+            if(other.gameObject == player)
+            {
+                playerInRange = false;
+            }
+        }
 
-        playerController.TakeDamage(attackDamage);
+        private void Attack()
+        {
+            attackTimer = 0f;
+
+            playerController.TakeDamage(attackDamage);
+        }
     }
 }

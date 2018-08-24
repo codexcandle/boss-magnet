@@ -1,22 +1,23 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
-using Codebycandle.NCSoftDemo;
 
-public class EnemyMovement:MonoBehaviour
+namespace Codebycandle.BossMagnet
 {
-    private Transform player;
-    private NavMeshAgent nav;
-
-    void Awake()
+    public class EnemyMovement:MonoBehaviour
     {
-        player = GameObject.FindGameObjectWithTag(GameTag.TAG_PLAYER).transform;
+        private Transform player;
+        private NavMeshAgent nav;
 
-        nav = GetComponent<NavMeshAgent>();
-    }
+        void Awake()
+        {
+            player = GameObject.FindGameObjectWithTag(GameTag.TAG_PLAYER).transform;
 
-    void Update()
-    {
-        nav.SetDestination(player.position);
+            nav = GetComponent<NavMeshAgent>();
+        }
+
+        void Update()
+        {
+            nav.SetDestination(player.position);
+        }
     }
 }

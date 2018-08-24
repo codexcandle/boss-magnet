@@ -1,31 +1,31 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(AudioSource))]
-public class PowerupUIController:MonoBehaviour
+namespace Codebycandle.BossMagnet
 {
-	private AudioSource audioSource;	
+    [RequireComponent(typeof(AudioSource))]
+    public class PowerupUIController:MonoBehaviour
+    {
+        private AudioSource audioSource;
+        private Text tf;
 
-	private Text tf;
+        public void ShowView(bool value)
+        {
+            gameObject.SetActive(value);
+        }
 
-	public void ShowView(bool value)
-	{
-		gameObject.SetActive(value);
-	}
+        public void HandlePowerupGained(string message)
+        {
+            audioSource.Play();
 
-	public void HandlePowerupGained(string message)
-	{
-		audioSource.Play();
+            tf.text = message;
+        }
 
-		tf.text = message;
-	}
+        void Awake()
+        {
+            tf = GetComponentInChildren<Text>();
 
-	void Awake()
-	{
-		tf = GetComponentInChildren<Text>();
-
-		audioSource = GetComponent<AudioSource>();
-	}
+            audioSource = GetComponent<AudioSource>();
+        }
+    }
 }

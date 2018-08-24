@@ -1,11 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class MinimapViewController:MonoBehaviour
+namespace Codebycandle.BossMagnet
 {
-	public void ShowView(bool value)
-	{
-		gameObject.SetActive(value);
-	}
+    public class MinimapViewController:MonoBehaviour
+    {
+        public void ShowView(bool value)
+        {
+            gameObject.SetActive(value);
+        }
+    }
 }

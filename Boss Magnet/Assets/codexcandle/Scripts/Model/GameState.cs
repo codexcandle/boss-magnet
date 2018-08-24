@@ -1,16 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Codebycandle.NCSoftDemo
+namespace Codebycandle.BossMagnet
 {
 	public class GameState:MonoBehaviour
 	{
 		private static GameState instance;
 
-		private const string SCENE_PLAY = "2_play";
-		private const string SCENE_OVER = "3_over";
+		private const string SCENE_PLAY = "play";
+		private const string SCENE_OVER = "over";
 
 		private int _maxHP;
 		public int maxHP

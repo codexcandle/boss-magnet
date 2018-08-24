@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Codebycandle.NCSoftDemo
+namespace Codebycandle.BossMagnet
 {
 	public class ObjectPooler:MonoBehaviour
 	{

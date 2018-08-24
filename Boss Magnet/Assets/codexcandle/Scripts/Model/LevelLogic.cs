@@ -1,46 +1,50 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-namespace Codebycandle.NCSoftDemo
+namespace Codebycandle.BossMagnet
 {
-	[RequireComponent(typeof(ObjectPooler))]
-	[RequireComponent(typeof(AudioSource))]
+	[RequireComponent(typeof(ObjectPooler), typeof(AudioSource))]
 	public class LevelLogic:MonoBehaviour
 	{
-		// CAMERA -----------------------------------
-		[SerializeField]
+        #region VARS (camera)
+        [SerializeField]
 		private CameraController cameraController;
+        #endregion
 
-		// PLAYER -----------------------------------
-		private PlayerController playerController;		
+        #region VARS (player)
+        private PlayerController playerController;		
 		private Transform player;
+        #endregion
 
-		// BOSS -------------------------------------
-		[SerializeField]
+        #region VARS (boss)
+        [SerializeField]
 		private PromptController promptController;			
 		[SerializeField]
 		private Transform bossCameraPosition;
 		private bool bossBusy;
+        #endregion
 
-		// ENEMY ------------------------------------
-		[SerializeField]
+        #region VARS (enemy)
+        [SerializeField]
 		private GameObject enemyRoot;
+        #endregion
 
-		// MINI-MAP ---------------------------------				
-		[SerializeField]
+        #region VARS (mini-map)		
+        [SerializeField]
 		private MinimapViewController minimapViewController;
+        #endregion
 
- 		// SOUND ------------------------------------
-		[SerializeField]
+        #region VARS (audio)
+        [SerializeField]
 		private MusicPlayerController musicPlayerController;
         private AudioSource audioSource;
         public AudioClip wonClip;
         public AudioClip lostClip;
+        #endregion
 
-		// DEBRIS -----------------------------------
-		[SerializeField]
+        #region VARS (debris)
+        [SerializeField]
 		private int debrisCount = 5;
 		[SerializeField]
 		private int targetDebrisReductionFactor = 10;
@@ -57,16 +61,19 @@ namespace Codebycandle.NCSoftDemo
 				return _targetDebrisKind;
 			}
 		}
-		
-		// POWERUP ----------------------------------
-		[SerializeField]		
+        #endregion
+
+        #region VARS (powerup)
+        [SerializeField]		
 		private PowerupUIController powerupUIController;
+        #endregion
 
-		// SCOREBOARD -------------------------------		
-		[SerializeField]
+        #region VARS (scoreboard)	
+        [SerializeField]
 		private ScoreboardController scoreboardController;
+        #endregion
 
-		void Start()
+        void Start()
 		{
 			// get refs
 			player = GameObject.FindWithTag(GameTag.TAG_PLAYER).transform;		
@@ -92,76 +99,152 @@ namespace Codebycandle.NCSoftDemo
 			StartCoroutine(GameLoop());
 		}
 
-		private IEnumerator GameLoop()
-		{
-			// ------------------------------------------
-			enemyRoot.SetActive(false);
-			powerupUIController.ShowView(false);
-			scoreboardController.ShowView(false);
-			minimapViewController.ShowView(false);
-			playerController.ShowHealthMeter(false);
+        #region METHODS (game)
+        private IEnumerator GameLoop()
+        {
+            // pre-init
+            // *******************************************
+            // disable everything
+            enemyRoot.SetActive(false);
+            powerupUIController.ShowView(false);
+            scoreboardController.ShowView(false);
+            minimapViewController.ShowView(false);
+            playerController.ShowHealthMeter(false);
 
-			CreateDebris(debrisCount, targetDebrisCount, _targetDebrisKind);
-			// ------------------------------------------
+            // make boxes
+            CreateDebris(debrisCount, targetDebrisCount, _targetDebrisKind);
 
-			yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(2);
 
-			// ------------------------------------------
-			cameraController.ZoomTo(bossCameraPosition);
-			// ------------------------------------------
+            // focus camera on boss
+            // *******************************************
+            cameraController.ZoomTo(bossCameraPosition);
 
-			yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(2);
 
-			// ------------------------------------------
-			string targetName = _targetDebrisKind.ToString().ToUpper();
-			List<string> introText = GameText.Instance.GetIntroText(targetDebrisCount, targetName);
-			SetPromptText(introText[0]);
-			// ------------------------------------------
+            // set game text
+            // *******************************************
+            string targetName = _targetDebrisKind.ToString().ToUpper();
+            List<string> introText = GameText.Instance.GetIntroText(targetDebrisCount, targetName);
+            SetPromptText(introText[0]);
 
-			yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(2);
 
-			// ------------------------------------------
-			SetPromptText(introText[1]);
-			// ------------------------------------------
+            // update game text
+            // *******************************************
+            SetPromptText(introText[1]);
 
-			yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(2);
 
-			// ------------------------------------------
-			scoreboardController.ShowView(true);
-			minimapViewController.ShowView(true);
+            // reveal ui #1
+            // *******************************************
+            scoreboardController.ShowView(true);
+            minimapViewController.ShowView(true);
 
-			SetPromptText(introText[2]);
+            SetPromptText(introText[2]);
 
-			UpdateScore(0, targetDebrisCount, targetName);
-			// ------------------------------------------
+            UpdateScore(0, targetDebrisCount, targetName);
 
-			yield return new WaitForSeconds(3);
+            yield return new WaitForSeconds(3);
 
-			// ------------------------------------------
-			SetPromptText(introText[3]);
-						
-			playerController.ShowHealthMeter(true);
-			// ------------------------------------------
+            // reveal ui #2 (& update game text #2)
+            // *******************************************
+            SetPromptText(introText[3]);
 
-			yield return new WaitForSeconds(3);
+            playerController.ShowHealthMeter(true);
 
-			// ------------------------------------------
-			SetPromptText();
+            yield return new WaitForSeconds(3);
 
-			cameraController.FocusOn(player.gameObject, 4);
-			// ------------------------------------------
+            // update game text #3 (& zoom camera to player)
+            // *******************************************
+            SetPromptText();
 
-			yield return new WaitForSeconds(5);
+            cameraController.FocusOn(player.gameObject, 4);
 
-			// ------------------------------------------
-			enemyRoot.SetActive(true);
+            yield return new WaitForSeconds(5);
 
-			playerController.EnableMovement(true);
-			// ------------------------------------------
-		} 		
+            // enable enemies / player
+            // *******************************************
+            enemyRoot.SetActive(true);
 
-		// BOSS -------------------------------------
-		public void HandleBossInteraction()
+            playerController.EnableMovement(true);
+        }
+
+        IEnumerator HandleWin()
+        {
+            playerController.EnableMovement(false);
+
+            scoreboardController.ShowView(false);
+
+            enemyRoot.SetActive(false);
+
+            musicPlayerController.PlayMusic(false);
+
+            SetPromptText(GameText.FOUND_ALL);
+
+            PlaySound(wonClip);
+
+            yield return new WaitForSeconds(3);
+
+            cameraController.ZoomTo(bossCameraPosition);
+
+            SetPromptText(GameText.GAME_WIN);
+
+            yield return new WaitForSeconds(5);
+
+            EndGame();
+        }
+
+        IEnumerator EndGameFromEnemy()
+        {
+            playerController.EnableMovement(false);
+
+            playerController.ShowHealthMeter(false);
+
+            scoreboardController.ShowView(false);
+
+            minimapViewController.ShowView(false);
+
+            musicPlayerController.PlayMusic(false);
+
+            SetPromptText(GameText.GAME_LOST_ENEMY);
+
+            PlaySound(lostClip);
+
+            yield return new WaitForSeconds(4);
+
+            EndGame();
+        }
+
+        IEnumerator EndGameFromBoundsExceeded()
+        {
+            playerController.EnableMovement(false);
+
+            playerController.ShowHealthMeter(false);
+
+            scoreboardController.ShowView(false);
+
+            minimapViewController.ShowView(false);
+
+            musicPlayerController.PlayMusic(false);
+
+            SetPromptText(GameText.GAME_LOST_BOUNDS);
+
+            PlaySound(lostClip);
+
+            yield return new WaitForSeconds(4);
+
+            EndGame();
+        }
+
+        private void EndGame()
+        {
+            GameState.Instance.EndState();
+        }
+        #endregion
+
+        #region METHODS (boss)
+        public void HandleBossInteraction()
 		{
 			if(bossBusy)
 			{
@@ -225,9 +308,10 @@ namespace Codebycandle.NCSoftDemo
 		{
 			StartCoroutine(FlashMessage(text, secs));			
 		}
+        #endregion
 
-		// PROMPT -----------------------------------
-		private void SetPromptText(string value = "")
+        #region METHODS (prompt)
+        private void SetPromptText(string value = "")
 		{
 			promptController.SetText(value);
 		}
@@ -240,9 +324,10 @@ namespace Codebycandle.NCSoftDemo
 
 			SetPromptText();
 		}
+        #endregion
 
-		// SCOREBOARD -------------------------------		
-		private void UpdateScore(int score, int max, string kindText = "")
+        #region METHODS (scoreboard)	
+        private void UpdateScore(int score, int max, string kindText = "")
 		{
 			if(score < 0 || score > max)
 				return;
@@ -256,9 +341,17 @@ namespace Codebycandle.NCSoftDemo
 				scoreboardController.SetColorText(kindText);
 			}
 		}
+        #endregion
 
-		// DEBRIS -----------------------------------		
-		private void CreateDebris(int totalCount, 
+        #region METHODS (debris)	
+        private Debris.Kind GetRandomDebrisKind()
+        {
+            string[] kinds = System.Enum.GetNames(typeof(Debris.Kind));
+
+            return (Debris.Kind)Random.Range(0, kinds.Length);
+        }
+
+        private void CreateDebris(int totalCount, 
 									int specialDebrisCount = -1, 
 									Debris.Kind specialDebrisKind = Debris.Kind.Blue, 
 									string parentName = "debris")
@@ -283,16 +376,10 @@ namespace Codebycandle.NCSoftDemo
 				obj.SetActive(true);
 			}
 		}
+        #endregion
 
-		private Debris.Kind GetRandomDebrisKind()
-		{
-			string[] kinds = System.Enum.GetNames(typeof(Debris.Kind));
-
-			return (Debris.Kind)Random.Range(0, kinds.Length);
-		}		
-
-		// POWERUP ----------------------------------
-		public void HandlePowerup()
+        #region METHODS (powerup)
+        public void HandlePowerup()
 		{
 			StartCoroutine(ShowPowerupFound());
 		}
@@ -307,9 +394,11 @@ namespace Codebycandle.NCSoftDemo
 
 			powerupUIController.ShowView(false);
 		}
+        #endregion
 
-		// HEALTH -----------------------------------		
-		public void HandlePlayerHPChange(int newHP)
+        #region METHODS (health)
+        // HEALTH -----------------------------------		
+        public void HandlePlayerHPChange(int newHP)
 		{
             if(newHP <= 0)
 			{
@@ -320,92 +409,24 @@ namespace Codebycandle.NCSoftDemo
 				GameState.Instance.hp = newHP;
 			}
 		}
+        #endregion
 
-		// GAME -------------------------------------
-		IEnumerator HandleWin()
-		{
-			playerController.EnableMovement(false);
+        #region METHODS (bounds)
+        public void HandleBoundsExceeded()
+        {
+            StartCoroutine(EndGameFromBoundsExceeded());
+        }
+        #endregion
 
-			scoreboardController.ShowView(false);
-
-			enemyRoot.SetActive(false);
-
-			musicPlayerController.PlayMusic(false);
-
-			SetPromptText(GameText.FOUND_ALL);
-
-			PlaySound(wonClip);
-
-			yield return new WaitForSeconds(3);
-
-			cameraController.ZoomTo(bossCameraPosition);
-
-			SetPromptText(GameText.GAME_WIN);
-
-			yield return new WaitForSeconds(5);
-
- 			EndGame();
-		}
-
-		IEnumerator EndGameFromEnemy()
-		{
-			playerController.EnableMovement(false);
-
-			playerController.ShowHealthMeter(false);
-
-			scoreboardController.ShowView(false);
-
-			minimapViewController.ShowView(false);
-
-			musicPlayerController.PlayMusic(false);
-
-			SetPromptText(GameText.GAME_LOST_ENEMY);
-
-			PlaySound(lostClip);
-
-			yield return new WaitForSeconds(4);
-
-			EndGame();
-		}
-
-		public void HandleBoundsExceeded()
-		{
-			StartCoroutine(EndGameFromBoundsExceeded());
-		}
-
-		IEnumerator EndGameFromBoundsExceeded()
-		{
-			playerController.EnableMovement(false);
-
-			playerController.ShowHealthMeter(false);
-
-			scoreboardController.ShowView(false);
-
-			minimapViewController.ShowView(false);
-
-			musicPlayerController.PlayMusic(false);
-
-			SetPromptText(GameText.GAME_LOST_BOUNDS);
-
-			PlaySound(lostClip);
-
-			yield return new WaitForSeconds(4);
-
-			EndGame();	
-		}
-
-		private void EndGame()
-		{
-			GameState.Instance.EndState();
-		}
-
-		// TODO - move to SoundManager!
-		// SOUND ------------------------------------				
+        #region METHODS (audio)
+        // TODO - move to SoundManager!
+        // SOUND ------------------------------------				
         private void PlaySound(AudioClip clip)
         {
             audioSource.clip = clip;
-            
+
             audioSource.Play();
-        }  		
-	}
+        }
+        #endregion
+    }
 }

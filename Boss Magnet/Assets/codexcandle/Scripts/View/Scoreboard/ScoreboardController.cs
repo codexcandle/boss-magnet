@@ -1,33 +1,34 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class ScoreboardController:MonoBehaviour
+namespace Codebycandle.BossMagnet
 {
-	[SerializeField]
-	private Text colorText;
+    public class ScoreboardController:MonoBehaviour
+    {
+        [SerializeField]
+        private Text colorText;
 
-	[SerializeField]
-	private Text countText;
+        [SerializeField]
+        private Text countText;
 
-	public void ShowView(bool value)
-	{
-		gameObject.SetActive(value);
-	}
+        public void ShowView(bool value)
+        {
+            gameObject.SetActive(value);
+        }
 
-	public void SetColorText(string value = "")
-	{
-		colorText.text = (value != null) ? value.ToUpper() : "";
-	}
+        public void SetColorText(string value = "")
+        {
+            colorText.text = (value != null) ? value.ToUpper() : "";
+        }
 
-	public void SetCountText(string value = "")
-	{
-		countText.text = value;
-	}	
+        public void SetCountText(string value = "")
+        {
+            countText.text = value;
+        }
 
-	void Start()
-	{
-		colorText.text = "";
-	}
+        void Start()
+        {
+            colorText.text = "";
+        }
+    }
 }
