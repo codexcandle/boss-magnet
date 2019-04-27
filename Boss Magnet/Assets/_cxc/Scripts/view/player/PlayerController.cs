@@ -30,7 +30,9 @@ namespace Codebycandle.BossMagnet
         #endregion
 
         #region VARS (movement)
-        [SerializeField] private float speed;
+        // TODO - confirm if both values below are needed?
+        [SerializeField] private float speed;               // default = 10
+        [SerializeField] private float inputAccelMult;      // default = 3
         private bool _active;
         public bool active
         {
@@ -241,13 +243,14 @@ namespace Codebycandle.BossMagnet
                     moveVertical = -Input.acceleration.z;
                 #endif
 
-                // TODO - experimenting with value below
-                int magicVal = 1;
-                moveHorizontal *= magicVal;
-                moveVertical *= magicVal;
+                // TODO - confirm if below is needed / helpful?
+                moveHorizontal *= inputAccelMult;
+                moveVertical *= inputAccelMult;
 
+                // calc vector
                 Vector3 movement = new Vector3(moveHorizontal, 0.0f, moveVertical);
 
+                // apply force
                 playerModelRB.AddForce(movement * speed);
             }
         }
