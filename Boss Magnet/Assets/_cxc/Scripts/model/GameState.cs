@@ -7,8 +7,8 @@ namespace Codebycandle.BossMagnet
 	{
 		private static GameState instance;
 
-		private const string SCENE_PLAY = "play";
-		private const string SCENE_OVER = "over";
+		private const string SCENE_PLAY = "01_play";
+		private const string SCENE_OVER = "02_over";
 
 		private int _maxHP;
 		public int maxHP
